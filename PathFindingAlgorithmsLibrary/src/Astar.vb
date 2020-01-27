@@ -25,21 +25,27 @@ Public Class AStar
     Private Class pathFindingExecution
         Inherits PathFindingAlgorithmsLibrary.PathFindingExecution
 
-
+        Private _list As List(Of Node)
         Sub New(ByVal owner As AStar, ByVal pfi As IPathFindingInput)
             MyBase.New(owner, pfi)
+            Me._list = New List(Of Node)
+        End Sub
+
+        Protected Overrides Sub addOrigin(ByVal origin As Node)
+            Me._list.Add(origin)
         End Sub
 
         Protected Overrides Function doStep() As Boolean
-            Dim currentNode As Node = Me._queue.Dequeue
+            Dim currentNode As Node = Me._list.Item(0)
             Dim minfScore As Integer = Me._map.GetFScore(currentNode, Me._destination)
-            For Each node As Node In Me._queue
+            For Each node As Node In Me._list
                 Dim fScore As Integer = Me._map.GetFScore(node, Me._destination)
                 If fScore <= minfScore Then
                     currentNode = node
                     minfScore = fScore
                 End If
             Next
+            Me._list.Remove(currentNode)
             currentNode.State = Node.NodeState.Visited
             Dim result As Boolean
             If currentNode.Location.Equals(Me._destination.Location) Then
@@ -51,9 +57,9 @@ Public Class AStar
                     newNode.State = Node.NodeState.InFrontier
                     newNode.Cost = currentNode.Cost + 1
                     newNode.Predecessor = currentNode
-                    Me._queue.Enqueue(newNode)
+                    Me._list.Add(newNode)
                 Next
-                If Me._queue.Count = 0 Then
+                If Me._list.Count = 0 Then
                     Me._found = False
                     result = True
                 Else

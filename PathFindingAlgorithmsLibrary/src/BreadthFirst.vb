@@ -26,8 +26,14 @@ Public Class BreadthFirst
     Private Class pathFindingExecution
         Inherits PathFindingAlgorithmsLibrary.PathFindingExecution
 
+        Private _queue As Queue(Of Node)
         Sub New(ByVal owner As BreadthFirst, ByVal pfi As IPathFindingInput)
             MyBase.New(owner, pfi)
+            Me._queue = New Queue(Of Node)
+        End Sub
+
+        Protected Overrides Sub addOrigin(ByVal origin As Node)
+            Me._queue.Enqueue(origin)
         End Sub
 
         Protected Overrides Function doStep() As Boolean
@@ -38,7 +44,8 @@ Public Class BreadthFirst
                 Me._found = True
                 result = True
             Else
-                For Each newNode As Node In Me._map.getGeitones(currentNode.Location).Where(Function(n) n.State = Node.NodeState.Unvisited).ToArray
+                For Each newNode As Node In Me._map.getGeitones(currentNode.Location) _
+                                            .Where(Function(n) n.State = Node.NodeState.Unvisited).ToArray
                     newNode.State = Node.NodeState.InFrontier
                     newNode.Predecessor = currentNode
                     Me._queue.Enqueue(newNode)

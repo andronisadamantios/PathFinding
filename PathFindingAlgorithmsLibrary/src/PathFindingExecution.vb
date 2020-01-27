@@ -6,7 +6,6 @@
     Protected _map As Map
     Private _origin As Node
     Protected _destination As Node
-    Protected _queue As Queue(Of Node)
 
     Private _finished As Boolean
     Protected _found As Boolean
@@ -28,7 +27,6 @@
         Me._origin = pfi.Origin
         Me._destination = pfi.Destination
         Me._stopwatch = New Stopwatch
-        Me._queue = New Queue(Of Node)
     End Sub
 
     Private Sub mapReseted(ByVal m As Map, ByVal e As Map.ResetEventArgs)
@@ -38,14 +36,15 @@
     Protected Overridable Sub reset()
         Me._found = False
         Me._finished = False
-        Me._queue.Clear()
         Me._stopwatch.Reset()
     End Sub
 
+    Protected MustOverride Sub addOrigin(ByVal origin As Node)
+
     Friend Sub Run()
         Me._map.Reset()
-        Me._queue = New Queue(Of Node)
-        Me._queue.Enqueue(Me._origin)
+        Me.addOrigin(Me._origin)
+
         Dim finished As Boolean = False
         Me._stopwatch.Start()
         While Not finished
@@ -58,6 +57,7 @@
         Else
             Me._result = PathFindingResult.NO_PATH
         End If
+
     End Sub
 
     Protected MustOverride Function doStep() As Boolean
