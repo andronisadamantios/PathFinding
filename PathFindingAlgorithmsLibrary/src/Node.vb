@@ -11,7 +11,7 @@ Public Class Node
     End Enum
 
     Private _location As Entities.IGridCoordinates
-    Private _predecessor As Node
+    Private _previous As Node
     Private _cumulativeCost As Integer
     Private _state As Node.NodeState
 
@@ -25,17 +25,17 @@ Public Class Node
         Get
             Return Me._state
         End Get
-        Set(value As Node.NodeState)
+        Set(ByVal value As Node.NodeState)
             Me._state = value
         End Set
     End Property
 
     Public Property Predecessor() As Node
         Get
-            Return Me._predecessor
+            Return Me._previous
         End Get
-        Set(value As Node)
-            Me._predecessor = value
+        Set(ByVal value As Node)
+            Me._previous = value
         End Set
     End Property
 
@@ -43,7 +43,7 @@ Public Class Node
         Get
             Return Me._cumulativeCost
         End Get
-        Set(value As Integer)
+        Set(ByVal value As Integer)
             Me._cumulativeCost = value
         End Set
     End Property
@@ -51,10 +51,10 @@ Public Class Node
     Public Sub New()
     End Sub
 
-    Public Sub New(row As Integer, col As Integer, s As Node.NodeState)
+    Public Sub New(ByVal row As Integer, ByVal col As Integer, ByVal s As Node.NodeState)
         Me._location = New Entities.GridCoordinates(row, col)
         Me._state = s
-        Me._predecessor = Nothing
+        Me._previous = Nothing
         Me._cumulativeCost = 0
     End Sub
 
@@ -62,13 +62,13 @@ Public Class Node
         If Me._state <> Node.NodeState.Impassable Then
             Me._state = Node.NodeState.Unvisited
         End If
-        Me._predecessor = Nothing
+        Me._previous = Nothing
         Me._cumulativeCost = 0
     End Sub
 
     Public Sub FullReset()
         Me._state = Node.NodeState.Unvisited
-        Me._predecessor = Nothing
+        Me._previous = Nothing
         Me._cumulativeCost = 0
     End Sub
 

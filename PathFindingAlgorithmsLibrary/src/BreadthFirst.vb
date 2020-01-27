@@ -3,29 +3,32 @@ Imports System.Collections
 Imports System.Collections.Generic
 
 Public Class BreadthFirst
-    Inherits SearchAlgorithm
+    Inherits PathFindingAlgorithm
 
-    Private _open As Queue = New Queue()
+    Private Shared ReadOnly BREADTH_FIRST_TITLE As String = "Breadth First Search Algorithm"
+
+    Public ReadOnly Property Title() As String
+        Get
+            Return BreadthFirst.BREADTH_FIRST_TITLE
+        End Get
+    End Property
 
     Public Sub New()
     End Sub
 
-    Public Sub New(map As Map, r As Integer)
-        MyBase.New(map, r)
-        Me._title = "Breadth First Search Algorithm"
+    Public Sub New(ByVal map As Map)
+        MyBase.New(map)
     End Sub
 
-    Protected Overrides Sub Reset()
-        MyBase.Reset()
-        Me._open.Clear()
+    Protected Overrides Sub reset()
+        MyBase.reset()
+        Me._queue.Clear()
     End Sub
 
-    Protected Overrides Sub Init()
-        Me._open.Enqueue(Me._origin)
-    End Sub
 
-    Protected Overrides Function Update() As Boolean
-        Dim currentNode As Node = CType(Me._open.Dequeue(), Node)
+
+    Protected Overrides Function update() As Boolean
+        Dim currentNode As Node = Me._queue.Dequeue
         currentNode.State = Node.NodeState.Visited
         Dim result As Boolean
         If currentNode.Location.Equals(Me._stoxos.Location) Then
@@ -35,9 +38,9 @@ Public Class BreadthFirst
             For Each newNode As Node In Me._map.getGeitones(currentNode.Location).Where(Function(n) n.State = Node.NodeState.Unvisited).ToArray
                 newNode.State = Node.NodeState.InFrontier
                 newNode.Predecessor = currentNode
-                Me._open.Enqueue(newNode)
+                Me._queue.Enqueue(newNode)
             Next
-            If Me._open.Count = 0 Then
+            If Me._queue.Count = 0 Then
                 Me._found = False
                 result = True
             Else
@@ -45,5 +48,9 @@ Public Class BreadthFirst
             End If
         End If
         Return result
+    End Function
+
+    Protected Overloads Overrides Function update(ByVal map As Map, ByVal queue As System.Collections.Generic.Queue(Of Node), ByVal origin As Node, ByVal destination As Node) As Boolean
+
     End Function
 End Class

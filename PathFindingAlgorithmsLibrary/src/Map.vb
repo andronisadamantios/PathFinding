@@ -39,20 +39,16 @@ Public Class Map
     End Sub
 
     Public Sub Reset()
-        'If Me._isReseted Then Return
         For Each lmnt In Me._matrix
             lmnt.Reset()
         Next
-        'Me._isReseted = True
         RaiseEvent Reseted(Me, New ResetEventArgs(False))
     End Sub
 
     Public Sub FullReset()
-        'If Me._isReseted Then Return
         For Each lmnt In Me._matrix
             lmnt.FullReset()
         Next
-        'Me._isReseted = True
         RaiseEvent Reseted(Me, New ResetEventArgs(True))
     End Sub
 

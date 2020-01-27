@@ -2,55 +2,53 @@
 Imports System.Collections.Generic
 
 Public Class BestFirst
-    Inherits SearchAlgorithm
+    Inherits PathFindingAlgorithm
 
-    Private _open As List(Of Node) = New List(Of Node)()
+    Private Shared ReadOnly BEST_FIRST_TITLE As String = "Best First Search Algorithm"
 
+    Public Overrides ReadOnly Property Title() As String
+        Get
+            Return BestFirst.BEST_FIRST_TITLE
+        End Get
+    End Property
     Public Sub New()
     End Sub
 
-    Public Sub New(map As Map, r As Integer)
-        MyBase.New(map, r)
-        Me._title = "Best First Search Algorithm"
+    Public Sub New(ByVal map As Map)
+        MyBase.New(map)
     End Sub
 
-    Protected Overrides Sub Reset()
-        Me._open.Clear()
-        MyBase.Reset()
+    Protected Overrides Sub reset()
+        Me._queue.Clear()
+        MyBase.reset()
     End Sub
 
-    Protected Overrides Sub Init()
-        Me._open.Add(Me._origin)
-    End Sub
 
-    Protected Overrides Function Update() As Boolean
-        Me._stopwatch.Start()
-        Dim currentNode As Node = Me._open(0)
-        Dim minHeuristic As Integer = Me._map.GetHeuristic(currentNode, Me._stoxos)
-        For Each node As Node In Me._open
-            Dim heuristic As Integer = Me._map.GetHeuristic(node, Me._stoxos)
+    Protected Overrides Function update(ByVal map As Map, ByVal queue As Queue(Of Node), ByVal origin As Node, ByVal destination As Node) As Boolean
+        Dim currentNode As Node = Me._queue.Dequeue
+        Dim minHeuristic As Integer = map.GetHeuristic(currentNode, destination)
+        For Each node As Node In Me._queue
+            Dim heuristic As Integer = map.GetHeuristic(node, destination)
             If heuristic <= minHeuristic Then
                 currentNode = node
                 minHeuristic = heuristic
             End If
         Next
-        Me._open.Remove(currentNode)
         currentNode.State = Node.NodeState.Visited
         Dim result As Boolean
-        If currentNode.Location.Equals(Me._stoxos.Location) Then
+        If currentNode.Location.Equals(destination.Location) Then
             Me._found = True
             result = True
         Else
-            For Each newNode As Node In Me._map.getGeitones(currentNode.Location).Where(Function(n) n.State = Node.NodeState.Unvisited).ToArray
+            For Each newNode As Node In map.getGeitones(currentNode.Location).Where(Function(n) n.State = Node.NodeState.Unvisited).ToArray
                 newNode.State = Node.NodeState.InFrontier
                 newNode.Predecessor = currentNode
-                Me._open.Add(newNode)
+                Me._queue.Add(newNode)
             Next
-            If Me._open.Count = 0 Then
+            If Me._queue.Count = 0 Then
                 Me._found = False
                 result = True
             Else
-                Me._stopwatch.[Stop]()
                 result = False
             End If
         End If

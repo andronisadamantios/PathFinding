@@ -2,39 +2,38 @@
 Imports System.Collections.Generic
 
 Public Class AStar
-    Inherits SearchAlgorithm
+    Inherits PathFindingAlgorithm
 
-    Private _open As List(Of Node) = New List(Of Node)()
+    Private Shared ReadOnly A_STAR_TITLE As String = "A* Search Algorithm"
 
-    Public Sub New()
+    Public ReadOnly Property Title() As String
+        Get
+            Return AStar.A_STAR_TITLE
+        End Get
+    End Property
+
+    Public Sub New(ByVal map As Map)
+        MyBase.New(map)
     End Sub
 
-    Public Sub New(map As Map, r As Integer)
-        MyBase.New(map, r)
-        Me._title = "A* Search Algorithm"
+    Protected Overrides Sub reset()
+        MyBase.reset()
+        Me._queue.Clear()
     End Sub
 
-    Protected Overrides Sub Reset()
-        MyBase.Reset()
-        Me._open.Clear()
-    End Sub
 
-    Protected Overrides Sub Init()
-        Me._open.Add(Me._origin)
-    End Sub
-
-    Protected Overrides Function Update() As Boolean
+    Protected Overrides Function update() As Boolean
         Me._stopwatch.Start()
-        Dim currentNode As Node = Me._open(0)
+        Dim currentNode As Node = Me._queue(0)
         Dim minfScore As Integer = Me._map.GetFScore(currentNode, Me._stoxos)
-        For Each node As Node In Me._open
+        For Each node As Node In Me._queue
             Dim fScore As Integer = Me._map.GetFScore(node, Me._stoxos)
             If fScore <= minfScore Then
                 currentNode = node
                 minfScore = fScore
             End If
         Next
-        Me._open.Remove(currentNode)
+        Me._queue.Remove(currentNode)
         currentNode.State = Node.NodeState.Visited
         Dim result As Boolean
         If currentNode.Location.Equals(Me._stoxos.Location) Then
@@ -45,9 +44,9 @@ Public Class AStar
                 newNode.State = Node.NodeState.InFrontier
                 newNode.Cost = currentNode.Cost + 1
                 newNode.Predecessor = currentNode
-                Me._open.Add(newNode)
+                Me._queue.Add(newNode)
             Next
-            If Me._open.Count = 0 Then
+            If Me._queue.Count = 0 Then
                 Me._found = False
                 result = True
             Else

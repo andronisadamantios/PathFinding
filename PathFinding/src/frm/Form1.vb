@@ -11,6 +11,12 @@
     Dim brushPath As System.Windows.Media.Brush = System.Windows.Media.Brushes.Green
 #End Region
 
+#Region "path-finding algorithms"
+    Private Shared ReadOnly BREADTH_FIRST As PathFindingAlgorithmsLibrary.PathFindingAlgorithm
+    Private Shared ReadOnly BEST_FIRST As PathFindingAlgorithmsLibrary.PathFindingAlgorithm
+    Private Shared ReadOnly A_STAR As PathFindingAlgorithmsLibrary.PathFindingAlgorithm
+#End Region
+
 #Region "tropoi start eketelesh"
     Private ReadOnly tse_clickBtnToRun As TroposStartEktelesh = New TroposStartEktelesh_clickBtnToRun(Me)
     Private ReadOnly tse_clickMapToRun As TroposStartEktelesh = New TroposStartEktelesh_clickMapToRun(Me)
@@ -29,7 +35,7 @@
     Private WithEvents map As PathFindingAlgorithmsLibrary.Map
 
     ' the selected algorithm
-    Private WithEvents sa As PathFindingAlgorithmsLibrary.SearchAlgorithm
+    Private WithEvents sa As PathFindingAlgorithmsLibrary.PathFindingAlgorithm
 
     ' the selected tropos start eketelesh
     Private _troposStartEktelesh As TroposStartEktelesh
@@ -68,9 +74,9 @@
         Me.setElementHostSize()
         Me.ElementHost1.Child = rg.Grid
 
-        Me.tscbAlgos.Items.Add(New PathFindingAlgorithmsLibrary.BreadthFirst(map, 1))
-        Me.tscbAlgos.Items.Add(New PathFindingAlgorithmsLibrary.BestFirst(map, 1))
-        Me.tscbAlgos.Items.Add(New PathFindingAlgorithmsLibrary.AStar(map, 1))
+        Me.tscbAlgos.Items.Add(New PathFindingAlgorithmsLibrary.BreadthFirst(map))
+        Me.tscbAlgos.Items.Add(New PathFindingAlgorithmsLibrary.BestFirst(map))
+        Me.tscbAlgos.Items.Add(New PathFindingAlgorithmsLibrary.AStar(map))
         Me.tscbAlgos.SelectedIndex = 0
 
         Me.tscbTroposStartEktelesh.Items.Add(Me.tse_clickBtnToRun)
@@ -124,7 +130,7 @@
             Me.rg.Color(p, brushArxiko)
         End If
     End Sub
-    Private Sub drawPath(ByVal sa As PathFindingAlgorithmsLibrary.SearchAlgorithm)
+    Private Sub drawPath(ByVal sa As PathFindingAlgorithmsLibrary.PathFindingAlgorithm)
         If sa.Path Is Nothing Then Return
         For Each lmnt In sa.Path.Except(New PathFindingAlgorithmsLibrary.Node() {Me.sa.Origin, Me.sa.Stoxos})
             Me.rg.Color(lmnt.Location, brushPath)
@@ -223,7 +229,7 @@
 
     Private Sub tscbAlgos_SelectedIndexChanged(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles tscbAlgos.SelectedIndexChanged
         If Me.tscbAlgos.SelectedIndex = -1 Then Return
-        Me.sa = CType(Me.tscbAlgos.SelectedItem, PathFindingAlgorithmsLibrary.SearchAlgorithm)
+        Me.sa = CType(Me.tscbAlgos.SelectedItem, PathFindingAlgorithmsLibrary.PathFindingAlgorithm)
     End Sub
 
     Private Sub tscbTroposStartEktelesh_SelectedIndexChanged(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles tscbTroposStartEktelesh.SelectedIndexChanged
@@ -232,5 +238,6 @@
     End Sub
 
 #End Region
+
 
 End Class
