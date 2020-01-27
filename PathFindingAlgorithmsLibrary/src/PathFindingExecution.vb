@@ -1,28 +1,18 @@
-﻿MustInherit Class PathFinding
+﻿MustInherit Class PathFindingExecution
 
     Private _owner As PathFindingAlgorithm
     Private _stopwatch As Stopwatch
-    Private _map As Map
+
+    Protected _map As Map
     Private _origin As Node
-    Private _destination As Node
-    Private _queue As Queue(Of Node)
-    Private _result As IPathFindingResult
+    Protected _destination As Node
+    Protected _queue As Queue(Of Node)
+
     Private _finished As Boolean
-    Private _found As Boolean
+    Protected _found As Boolean
+    Private _result As IPathFindingResult
 
-    Public ReadOnly Property Origin() As Node
-        Get
-            Return Me._origin
-        End Get
-    End Property
-
-    Public ReadOnly Property Destination() As Node
-        Get
-            Return Me._destination
-        End Get
-    End Property
-
-    Public ReadOnly Property Result() As IPathFindingResult
+    Friend ReadOnly Property Result() As IPathFindingResult
         Get
             If Me._result Is Nothing Then
                 Me.Run()
@@ -31,18 +21,25 @@
         End Get
     End Property
 
-    Sub New(ByVal owner As PathFindingAlgorithm, ByVal map As Map, ByVal origin As Node, ByVal destination As Node)
+    Sub New(ByVal owner As PathFindingAlgorithm, ByVal pfi As IPathFindingInput)
         Me._owner = owner
-        Me._map = map
-        Me._origin = origin
-        Me._destination = destination
+        Me._map = pfi.Map
+        AddHandler Me._map.Reseted, AddressOf mapReseted
+        Me._origin = pfi.Origin
+        Me._destination = pfi.Destination
+        Me._stopwatch = New Stopwatch
+        Me._queue = New Queue(Of Node)
+    End Sub
+
+    Private Sub mapReseted(ByVal m As Map, ByVal e As Map.ResetEventArgs)
+        Me.reset()
     End Sub
 
     Protected Overridable Sub reset()
-        Me._stopwatch.Reset()
         Me._found = False
-        Me._hasRun = False
-        Me._path = Nothing
+        Me._finished = False
+        Me._queue.Clear()
+        Me._stopwatch.Reset()
     End Sub
 
     Friend Sub Run()

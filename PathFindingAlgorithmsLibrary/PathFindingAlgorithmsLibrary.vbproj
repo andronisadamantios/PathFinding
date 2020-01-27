@@ -72,14 +72,11 @@
     <Compile Include="src\Astar.vb" />
     <Compile Include="src\BestFirst.vb" />
     <Compile Include="src\BreadthFirst.vb" />
-    <Compile Include="src\PathFinding.vb" />
+    <Compile Include="src\PathFindingExecution.vb" />
     <Compile Include="src\Map.vb" />
-    <Compile Include="src\NewFolder2\Graph.vb" />
-    <Compile Include="src\NewFolder2\Node.vb" />
     <Compile Include="src\Node.vb" />
     <Compile Include="src\PathFindingInput.vb" />
     <Compile Include="src\PathFindingResult.vb" />
-    <Compile Include="src\Point2D.vb" />
     <Compile Include="src\PathFindingAlgorithm.vb" />
   </ItemGroup>
   <ItemGroup>

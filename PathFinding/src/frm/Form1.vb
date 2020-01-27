@@ -7,7 +7,7 @@
     Dim brushArxiko As System.Windows.Media.Brush = System.Windows.Media.Brushes.LightGray
     Dim brushToixos As System.Windows.Media.Brush = System.Windows.Media.Brushes.Black
     Dim brushOrigin As System.Windows.Media.Brush = System.Windows.Media.Brushes.Blue
-    Dim brushStoxos As System.Windows.Media.Brush = System.Windows.Media.Brushes.Red
+    Dim brushDestination As System.Windows.Media.Brush = System.Windows.Media.Brushes.Red
     Dim brushPath As System.Windows.Media.Brush = System.Windows.Media.Brushes.Green
 #End Region
 
@@ -28,17 +28,21 @@
     Private bDrawClear As Boolean
 #End Region
 
-    ' the GUI grid
-    Private WithEvents rg As wpfGraphics.RectangleGrid
+
+    ' the selected algorithm
+    Private _selectedAlgorithm As PathFindingAlgorithmsLibrary.PathFindingAlgorithm
+
+    ' the selected tropos start eketelesh
+    Private _selectedTroposStartEktelesh As TroposStartEktelesh
+
+    ' an object that holds the currently selected origin and destination
+    Private _selectorOriginDestination As PathFindingAlgorithmsLibrary.SelectorOriginDestination
 
     ' the abstract map object
     Private WithEvents map As PathFindingAlgorithmsLibrary.Map
 
-    ' the selected algorithm
-    Private WithEvents sa As PathFindingAlgorithmsLibrary.PathFindingAlgorithm
-
-    ' the selected tropos start eketelesh
-    Private _troposStartEktelesh As TroposStartEktelesh
+    ' the GUI grid
+    Private WithEvents rg As wpfGraphics.RectangleGrid
 
     ' is in draw mode
     Friend ReadOnly Property IsDrawing() As Boolean
@@ -71,12 +75,14 @@
 
         Me.map = New PathFindingAlgorithmsLibrary.Map(rows, cols)
 
+        Me._selectorOriginDestination = New PathFindingAlgorithmsLibrary.SelectorOriginDestination(Me.map)
+
         Me.setElementHostSize()
         Me.ElementHost1.Child = rg.Grid
 
-        Me.tscbAlgos.Items.Add(New PathFindingAlgorithmsLibrary.BreadthFirst(map))
-        Me.tscbAlgos.Items.Add(New PathFindingAlgorithmsLibrary.BestFirst(map))
-        Me.tscbAlgos.Items.Add(New PathFindingAlgorithmsLibrary.AStar(map))
+        Me.tscbAlgos.Items.Add(PathFindingAlgorithmsLibrary.PathFindingAlgorithm.BEST_FIRST)
+        Me.tscbAlgos.Items.Add(PathFindingAlgorithmsLibrary.PathFindingAlgorithm.BREADTH_FIRST)
+        Me.tscbAlgos.Items.Add(PathFindingAlgorithmsLibrary.PathFindingAlgorithm.A_STAR)
         Me.tscbAlgos.SelectedIndex = 0
 
         Me.tscbTroposStartEktelesh.Items.Add(Me.tse_clickBtnToRun)
@@ -97,26 +103,29 @@
     End Sub
 
     Friend Sub Run()
-        Me.map.Reset()
-        If ((Me.sa.Origin IsNot Nothing) And (Me.sa.Stoxos IsNot Nothing)) Then
-            Me.drawPath(Me.sa)
+        If Me._selectorOriginDestination.Ready Then
+            Me.map.Reset()
+            Me.drawPath()
         End If
     End Sub
 
     Private Sub setOrigin(ByVal p As Entities.IGridCoordinates)
-        If IsDrawing Then Return
-        Dim prevOrigin = Me.sa.Origin
-        If Me.sa.SetOrigin(p.Row, p.Col) Then
-            If prevOrigin IsNot Nothing Then Me.rg.Color(prevOrigin.Location, brushArxiko)
+        Dim prevOrigin = Me._selectorOriginDestination.Origin
+        If Me._selectorOriginDestination.SetOrigin(p) Then
+            If prevOrigin IsNot Nothing Then
+                Me.rg.Color(prevOrigin, brushArxiko)
+            End If
             Me.rg.Color(p, brushOrigin)
         End If
     End Sub
-    Private Sub setStoxos(ByVal p As Entities.IGridCoordinates)
-        Dim prevStoxos = Me.sa.Stoxos
-        If Me.sa.SetStoxos(p.Row, p.Col) Then
-            If prevStoxos IsNot Nothing Then Me.rg.Color(prevStoxos.Location, brushArxiko)
+    Private Sub setDestination(ByVal p As Entities.IGridCoordinates)
+        Dim prevDestination = Me._selectorOriginDestination.Destination
+        If Me._selectorOriginDestination.SetDestination(p) Then
+            If prevDestination IsNot Nothing Then
+                Me.rg.Color(prevDestination, brushArxiko)
+            End If
+            Me.rg.Color(p, brushDestination)
         End If
-        Me.rg.Color(p, brushStoxos)
     End Sub
 
 
@@ -130,9 +139,13 @@
             Me.rg.Color(p, brushArxiko)
         End If
     End Sub
-    Private Sub drawPath(ByVal sa As PathFindingAlgorithmsLibrary.PathFindingAlgorithm)
-        If sa.Path Is Nothing Then Return
-        For Each lmnt In sa.Path.Except(New PathFindingAlgorithmsLibrary.Node() {Me.sa.Origin, Me.sa.Stoxos})
+    Private Sub drawPath()
+        Dim pfi = CType(Me._selectorOriginDestination, PathFindingAlgorithmsLibrary.IPathFindingInput)
+        Dim origin = pfi.Origin
+        Dim destination = pfi.Destination
+        Dim path = Me._selectedAlgorithm.FindPath(Me.map, origin, destination)
+
+        For Each lmnt In path.Except(New PathFindingAlgorithmsLibrary.Node() {origin, destination})
             Me.rg.Color(lmnt.Location, brushPath)
         Next
     End Sub
@@ -148,8 +161,12 @@
                 End If
             Next
         End If
-        If Me.sa.Origin IsNot Nothing Then Me.rg.Color(Me.sa.Origin.Location, brushOrigin)
-        If Me.sa.Stoxos IsNot Nothing Then Me.rg.Color(Me.sa.Stoxos.Location, brushStoxos)
+        If Me._selectorOriginDestination.Origin IsNot Nothing Then
+            Me.rg.Color(Me._selectorOriginDestination.Origin, brushOrigin)
+        End If
+        If Me._selectorOriginDestination.Destination IsNot Nothing Then
+            Me.rg.Color(Me._selectorOriginDestination.Destination, brushDestination)
+        End If
     End Sub
 
 #Region "Rectangle Grid Cell Events"
@@ -169,9 +186,9 @@
             If changedButton = Windows.Input.MouseButton.Left Then
                 Me.setOrigin(e.Coor)
             ElseIf changedButton = Windows.Input.MouseButton.Right Then
-                Me.setStoxos(e.Coor)
+                Me.setDestination(e.Coor)
             End If
-            Me._troposStartEktelesh.onCellDown(rg, e)
+            Me._selectedTroposStartEktelesh.onCellDown(rg, e)
         End If
     End Sub
 
@@ -184,9 +201,9 @@
             If e.MouseEventArgs.LeftButton = Windows.Input.MouseButtonState.Pressed Then
                 Me.setOrigin(e.Coor)
             ElseIf e.MouseEventArgs.RightButton = Windows.Input.MouseButtonState.Pressed Then
-                Me.setStoxos(e.Coor)
+                Me.setDestination(e.Coor)
             End If
-            Me._troposStartEktelesh.onCellEnter(rg, e)
+            Me._selectedTroposStartEktelesh.onCellEnter(rg, e)
         End If
     End Sub
 
@@ -208,8 +225,8 @@
     End Sub
 
     Private Sub tsBtnClearOla_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles tsBtnClearOla.Click
-        Me.sa.ClearOrigin()
-        Me.sa.ClearStoxos()
+        Me._selectorOriginDestination.ClearOrigin()
+        Me._selectorOriginDestination.ClearDestination()
         Me.map.FullReset()
     End Sub
 
@@ -229,12 +246,12 @@
 
     Private Sub tscbAlgos_SelectedIndexChanged(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles tscbAlgos.SelectedIndexChanged
         If Me.tscbAlgos.SelectedIndex = -1 Then Return
-        Me.sa = CType(Me.tscbAlgos.SelectedItem, PathFindingAlgorithmsLibrary.PathFindingAlgorithm)
+        Me._selectedAlgorithm = CType(Me.tscbAlgos.SelectedItem, PathFindingAlgorithmsLibrary.PathFindingAlgorithm)
     End Sub
 
     Private Sub tscbTroposStartEktelesh_SelectedIndexChanged(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles tscbTroposStartEktelesh.SelectedIndexChanged
         If Me.tscbTroposStartEktelesh.SelectedIndex = -1 Then Return
-        Me._troposStartEktelesh = CType(CType(sender, ToolStripComboBox).SelectedItem, TroposStartEktelesh)
+        Me._selectedTroposStartEktelesh = CType(CType(sender, ToolStripComboBox).SelectedItem, TroposStartEktelesh)
     End Sub
 
 #End Region
