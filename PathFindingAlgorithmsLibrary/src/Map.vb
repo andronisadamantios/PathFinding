@@ -26,8 +26,8 @@ Public Class Map
 
 
 
-    Public Sub New(rows As Integer, cols As Integer)
-        MyBase.New(rows, cols)
+    Public Sub New(ByVal definition As GridDefinition)
+        MyBase.New(definition)
 
         For i As Integer = 0 To Me._matrix.GetUpperBound(0)
             For j As Integer = 0 To Me._matrix.GetUpperBound(1)
@@ -35,7 +35,7 @@ Public Class Map
             Next
         Next
 
-        Me.TyposGeitonias = Entities.TyposGeitonias.Stavros
+        Me.Definition.TypeNeighbourHood = Entities.GridPattern.PLUS
     End Sub
 
     Public Sub Reset()
@@ -54,10 +54,10 @@ Public Class Map
 
 
     Public Function GetHeuristic(a As Node, b As Node) As Integer
-        Dim dRow = CInt(Math.Abs(CInt(a.Location.Row) - CInt(b.Location.Row)))
-        Dim dCol = CInt(Math.Abs(CInt(a.Location.Col) - CInt(b.Location.Col)))
+        Dim dRow = CInt(Math.Abs(CInt(a.Location.IndexRow) - CInt(b.Location.IndexRow)))
+        Dim dCol = CInt(Math.Abs(CInt(a.Location.IndexCol) - CInt(b.Location.IndexCol)))
 
-        If Me.Loukoumas Then
+        If Me.Definition.Topology.WrapBoth Then
             Dim dRow2, dCol2 As Integer
 
             'Dim min, max As Integer
@@ -68,8 +68,8 @@ Public Class Map
             'max = System.Math.Max(a.Location.Col, b.Location.Col)
             'dCol2 = Me._cols - max + min
 
-            drow2 = Me._rows - dRow
-            dCol2 = Me._cols - dCol
+            dRow2 = Me.Definition.Size.CountRows - dRow
+            dCol2 = Me.Definition.Size.CountCols - dCol
 
             dRow = System.Math.Min(dRow, dRow2)
             dCol = System.Math.Min(dCol, dCol2)

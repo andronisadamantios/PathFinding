@@ -52,7 +52,7 @@ Public Class Node
     End Sub
 
     Public Sub New(ByVal row As Integer, ByVal col As Integer, ByVal s As Node.NodeState)
-        Me._location = New Entities.GridCoordinates(row, col)
+        Me._location = New gridCoordinatesNode(row, col)
         Me._state = s
         Me._previous = Nothing
         Me._cumulativeCost = 0
@@ -75,4 +75,16 @@ Public Class Node
     Public Overrides Function ToString() As String
         Return String.Format("{0} (state: {1}, cost: {2})", New Object() {Me._location.ToString, Me._state.ToString, Me._cumulativeCost.ToString})
     End Function
+
+    Private Class gridCoordinatesNode
+        Inherits Entities.GridCoordinatesBase
+
+        Sub New(ByVal indexRow As Integer, ByVal indexCol As Integer)
+            MyBase.New(indexRow, indexCol)
+        End Sub
+
+        Public Overrides Function ToString() As String
+            Return MyBase.ToString()
+        End Function
+    End Class
 End Class

@@ -87,6 +87,7 @@
       <DependentUpon>Settings.settings</DependentUpon>
       <DesignTimeSharedInput>True</DesignTimeSharedInput>
     </Compile>
+    <Compile Include="src\Module1.vb" />
     <Compile Include="src\TroposStartEktelesh.vb" />
     <Compile Include="src\frm\Form1.Designer.vb">
       <DependentUpon>Form1.vb</DependentUpon>
@@ -123,7 +124,7 @@
       <Project>{3ACBDE9D-73D8-47F1-8855-C49BC4395694}</Project>
       <Name>Entities</Name>
     </ProjectReference>
-    <ProjectReference Include="..\..\GRAPHICS\wpfGraphics\wpfGraphics\wpfGraphics.vbproj">
+    <ProjectReference Include="..\..\_GRAPHICS\wpfGraphics\wpfGraphics\wpfGraphics.vbproj">
       <Project>{9DDC4AF7-18D3-4602-9783-77374C42DBAC}</Project>
       <Name>wpfGraphics</Name>
     </ProjectReference>

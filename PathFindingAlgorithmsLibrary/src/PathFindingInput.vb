@@ -82,8 +82,16 @@ Public Class SelectorOriginDestination
         End Get
     End Property
 
+
+
+    Sub New(ByVal map As Map)
+        Me._map = map
+    End Sub
+
+
+
     Public Function SetOrigin(ByVal p As Entities.IGridCoordinates) As Boolean
-        If Me._map.IsValidCoor(p) AndAlso Not Object.Equals(Me._origin, p) Then
+        If Me._map.Definition.IsValidCoor(p) AndAlso Not Object.Equals(Me._origin, p) Then
             Me._origin = p
             Me._pfi = Nothing
             Return True
@@ -92,7 +100,7 @@ Public Class SelectorOriginDestination
         End If
     End Function
     Public Function SetDestination(ByVal p As Entities.IGridCoordinates) As Boolean
-        If Me._map.IsValidCoor(p) AndAlso Not Object.Equals(Me._destination, p) Then
+        If Me._map.Definition.IsValidCoor(p) AndAlso Not Object.Equals(Me._destination, p) Then
             Me._destination = p
             Me._pfi = Nothing
             Return True
@@ -110,12 +118,6 @@ Public Class SelectorOriginDestination
         Me._destination = Nothing
         Me._pfi = Nothing
     End Sub
-
-
-    Sub New(ByVal map As Map)
-        Me._map = map
-    End Sub
-
 
 
 End Class

@@ -1,8 +1,5 @@
 ﻿Public Class Form1
 
-    Private Shared s As Screen
-    Dim cols, rows As Integer
-
 #Region "color variables"
     Dim brushArxiko As System.Windows.Media.Brush = System.Windows.Media.Brushes.LightGray
     Dim brushToixos As System.Windows.Media.Brush = System.Windows.Media.Brushes.Black
@@ -42,7 +39,7 @@
     Private WithEvents map As PathFindingAlgorithmsLibrary.Map
 
     ' the GUI grid
-    Private WithEvents rg As wpfGraphics.RectangleGrid
+    Private WithEvents gd As wpfGraphics.GridDisplay
 
     ' is in draw mode
     Friend ReadOnly Property IsDrawing() As Boolean
@@ -61,24 +58,23 @@
 
         ' This call is required by the designer.
         InitializeComponent()
-        Me.Panel1.HorizontalScroll.Enabled = True
-        Me.Panel1.HorizontalScroll.Visible = True
-        Me.Panel1.VerticalScroll.Enabled = True
-        Me.Panel1.VerticalScroll.Visible = True
+        Me.TableLayoutPanel1.HorizontalScroll.Enabled = True
+        Me.TableLayoutPanel1.HorizontalScroll.Visible = True
+        Me.TableLayoutPanel1.VerticalScroll.Enabled = True
+        Me.TableLayoutPanel1.VerticalScroll.Visible = True
 
         ' Add any initialization after the InitializeComponent() call.
-        Me.rows = 20 : Me.cols = 40
 
-        Me.rg = New wpfGraphics.RectangleGrid(rows, cols)
-        Me.rg.brushStart = brushArxiko
-        Me.rg.Reset()
+        Me.gd = New wpfGraphics.GridDisplay(Module1.rows, Module1.cols)
+        Me.gd.Settings.BrushNormal = brushArxiko
 
-        Me.map = New PathFindingAlgorithmsLibrary.Map(rows, cols)
+        Me.map = New PathFindingAlgorithmsLibrary.Map(Module1.gridDefinition)
 
         Me._selectorOriginDestination = New PathFindingAlgorithmsLibrary.SelectorOriginDestination(Me.map)
 
         Me.setElementHostSize()
-        Me.ElementHost1.Child = rg.Grid
+        Me.ElementHost1.Child = gd.Grid
+        Me.gd.Reset()
 
         Me.tscbAlgos.Items.Add(PathFindingAlgorithmsLibrary.PathFindingAlgorithm.BEST_FIRST)
         Me.tscbAlgos.Items.Add(PathFindingAlgorithmsLibrary.PathFindingAlgorithm.BREADTH_FIRST)
@@ -93,14 +89,17 @@
     End Sub
 
 
-    Private Sub setElementHostSize()
-        s = Screen.FromControl(Me)
-        Dim s1 = System.Drawing.Size.Subtract(s.WorkingArea.Size, New Size(10, 10))
-        Dim dx = CInt(System.Math.Floor(CDbl(s1.Width) / CDbl(cols)))
-        Dim dy = CInt(System.Math.Floor(CDbl(s1.Height) / CDbl(rows)))
-        Dim d = System.Math.Min(dx, dy)
-        Me.ElementHost1.Size = New Size(cols * d, rows * d)
+    Private Sub TableLayoutPanel1_SizeChanged(ByVal sender As Object, ByVal e As System.EventArgs) Handles TableLayoutPanel1.SizeChanged
+        Me.setElementHostSize()
     End Sub
+
+    Private Sub setElementHostSize()
+        Dim width As Double = Me.TableLayoutPanel1.Size.Width
+        width = 0.95 * width
+        Dim height = (CDbl(Module1.rows) / CDbl(Module1.cols)) * width
+        Me.ElementHost1.Size = New Size(CInt(Math.Round(width)), CInt(Math.Round(height)))
+    End Sub
+
 
     Friend Sub Run()
         If Me._selectorOriginDestination.Ready Then
@@ -109,22 +108,24 @@
         End If
     End Sub
 
+
     Private Sub setOrigin(ByVal p As Entities.IGridCoordinates)
         Dim prevOrigin = Me._selectorOriginDestination.Origin
         If Me._selectorOriginDestination.SetOrigin(p) Then
             If prevOrigin IsNot Nothing Then
-                Me.rg.Color(prevOrigin, brushArxiko)
+                Me.gd.Color(prevOrigin, brushArxiko)
             End If
-            Me.rg.Color(p, brushOrigin)
+            Me.gd.Color(p, brushOrigin)
         End If
     End Sub
+
     Private Sub setDestination(ByVal p As Entities.IGridCoordinates)
         Dim prevDestination = Me._selectorOriginDestination.Destination
         If Me._selectorOriginDestination.SetDestination(p) Then
             If prevDestination IsNot Nothing Then
-                Me.rg.Color(prevDestination, brushArxiko)
+                Me.gd.Color(prevDestination, brushArxiko)
             End If
-            Me.rg.Color(p, brushDestination)
+            Me.gd.Color(p, brushDestination)
         End If
     End Sub
 
@@ -133,12 +134,13 @@
         Dim n = Me.map.Get(p)
         If b Then
             n.State = PathFindingAlgorithmsLibrary.Node.NodeState.Impassable
-            Me.rg.Color(p, brushToixos)
+            Me.gd.Color(p, brushToixos)
         Else
             n.State = PathFindingAlgorithmsLibrary.Node.NodeState.Unvisited
-            Me.rg.Color(p, brushArxiko)
+            Me.gd.Color(p, brushArxiko)
         End If
     End Sub
+
     Private Sub drawPath()
         Dim pfi = CType(Me._selectorOriginDestination, PathFindingAlgorithmsLibrary.IPathFindingInput)
         Dim origin = pfi.Origin
@@ -146,32 +148,34 @@
         Dim path = Me._selectedAlgorithm.FindPath(Me.map, origin, destination)
 
         For Each lmnt In path.Except(New PathFindingAlgorithmsLibrary.Node() {origin, destination})
-            Me.rg.Color(lmnt.Location, brushPath)
+            Me.gd.Color(lmnt.Location, brushPath)
         Next
     End Sub
 
+
     Private Sub map_Reseted(ByVal map As PathFindingAlgorithmsLibrary.Map, ByVal e As PathFindingAlgorithmsLibrary.Map.ResetEventArgs) Handles map.Reseted
-        Me.rg.Reset()
+        Me.gd.Reset()
         If Not e.Full Then
             For Each lmnt In CType(Me.map, IEnumerable(Of PathFindingAlgorithmsLibrary.Node))
                 If lmnt.State = PathFindingAlgorithmsLibrary.Node.NodeState.Impassable Then
-                    Me.rg.Color(lmnt.Location, brushToixos)
+                    Me.gd.Color(lmnt.Location, brushToixos)
                 Else
-                    Me.rg.Color(lmnt.Location, brushArxiko)
+                    Me.gd.Color(lmnt.Location, brushArxiko)
                 End If
             Next
         End If
         If Me._selectorOriginDestination.Origin IsNot Nothing Then
-            Me.rg.Color(Me._selectorOriginDestination.Origin, brushOrigin)
+            Me.gd.Color(Me._selectorOriginDestination.Origin, brushOrigin)
         End If
         If Me._selectorOriginDestination.Destination IsNot Nothing Then
-            Me.rg.Color(Me._selectorOriginDestination.Destination, brushDestination)
+            Me.gd.Color(Me._selectorOriginDestination.Destination, brushDestination)
         End If
     End Sub
 
+
 #Region "Rectangle Grid Cell Events"
 
-    Private Sub onRectangleGrid_CellDown(ByVal rg As wpfGraphics.RectangleGrid, ByVal e As wpfGraphics.CoorClickEventArgs) Handles rg.CellDown
+    Private Sub onGridDisplay_CellDown(ByVal rg As wpfGraphics.GridDisplay, ByVal e As wpfGraphics.CoorClickEventArgs) Handles gd.CellDown
         Dim changedButton = e.MouseButtonEventArgs.ChangedButton
 
         If Me.IsDrawing Then
@@ -184,30 +188,30 @@
             End If
         Else
             If changedButton = Windows.Input.MouseButton.Left Then
-                Me.setOrigin(e.Coor)
+                Me.setOrigin(e.Coors)
             ElseIf changedButton = Windows.Input.MouseButton.Right Then
-                Me.setDestination(e.Coor)
+                Me.setDestination(e.Coors)
             End If
             Me._selectedTroposStartEktelesh.onCellDown(rg, e)
         End If
     End Sub
 
-    Private Sub onRectangleGrid_CellEnter(ByVal rg As wpfGraphics.RectangleGrid, ByVal e As wpfGraphics.CoorClickEventArgs) Handles rg.CellEnter
+    Private Sub onGridDisplay_CellEnter(ByVal rg As wpfGraphics.GridDisplay, ByVal e As wpfGraphics.CoorClickEventArgs) Handles gd.CellEnter
         If Me.IsDrawing Then
             If (Me.bDrawToixo Xor Me.bDrawClear) Then
-                Me.drawToixo(e.Coor, Me.bDrawToixo)
+                Me.drawToixo(e.Coors, Me.bDrawToixo)
             End If
         Else
             If e.MouseEventArgs.LeftButton = Windows.Input.MouseButtonState.Pressed Then
-                Me.setOrigin(e.Coor)
+                Me.setOrigin(e.Coors)
             ElseIf e.MouseEventArgs.RightButton = Windows.Input.MouseButtonState.Pressed Then
-                Me.setDestination(e.Coor)
+                Me.setDestination(e.Coors)
             End If
             Me._selectedTroposStartEktelesh.onCellEnter(rg, e)
         End If
     End Sub
 
-    Private Sub onRectangleGrid_CellUp(ByVal rg As wpfGraphics.RectangleGrid, ByVal e As wpfGraphics.CoorClickEventArgs) Handles rg.CellUp
+    Private Sub onGridDisplay_CellUp(ByVal rg As wpfGraphics.GridDisplay, ByVal e As wpfGraphics.CoorClickEventArgs) Handles gd.CellUp
         Me.bDrawToixo = False
         Me.bDrawClear = False
     End Sub
@@ -230,18 +234,25 @@
         Me.map.FullReset()
     End Sub
 
-    Private Sub tsBtnLoukoumas_CheckedChanged(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles tsBtnLoukoumas.CheckedChanged
-        Me.map.Loukoumas = Me.tsBtnLoukoumas.Checked
+    Private Sub tsBtnWrapBoth_CheckedChanged(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles tsBtnWrapBoth.CheckedChanged
+        Me.map.Definition.Topology.WrapBoth = Me.tsBtnWrapBoth.Checked
     End Sub
 
-    Private Sub tsBtnCrossStavros_CheckedChanged(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles tsBtnCross.CheckedChanged, tsBtnStavros.CheckedChanged
+    Private Sub tsBtnTyposGeitonias_CheckedChanged(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles tsBtnDiagonals.CheckedChanged, tsBtnPlus.CheckedChanged
         If Me.map Is Nothing Then Return
-        Me.map.TyposGeitonias = _
-            CType( _
-                CInt(Math.Abs(CInt(Me.tsBtnCross.Checked))) * CInt(Entities.TyposGeitonias.Diagonia) _
-                Or _
-                CInt(Math.Abs(CInt(Me.tsBtnStavros.Checked))) * CInt(Entities.TyposGeitonias.Stavros) _
-            , Entities.TyposGeitonias)
+
+        Dim bDiag = Me.tsBtnDiagonals.Checked
+        Dim bPlus = Me.tsBtnPlus.Checked
+        If bDiag AndAlso bPlus Then
+            Me.map.Definition.TypeNeighbourHood = Entities.GridPattern.SQUARE3X3
+        ElseIf bDiag Then
+            Me.map.Definition.TypeNeighbourHood = Entities.GridPattern.DIAGONALS
+        ElseIf bPlus Then
+            Me.map.Definition.TypeNeighbourHood = Entities.GridPattern.PLUS
+        Else
+            Me.map.Definition.TypeNeighbourHood = Entities.GridPattern.EMPTY
+        End If
+
     End Sub
 
     Private Sub tscbAlgos_SelectedIndexChanged(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles tscbAlgos.SelectedIndexChanged
@@ -255,6 +266,5 @@
     End Sub
 
 #End Region
-
 
 End Class

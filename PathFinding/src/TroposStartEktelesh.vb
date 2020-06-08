@@ -15,10 +15,10 @@ Public MustInherit Class TroposStartEktelesh
 
     Protected MustOverride ReadOnly Property Title() As String
 
-    Friend Overridable Sub onCellDown(ByVal rg As wpfGraphics.RectangleGrid, ByVal e As wpfGraphics.CoorClickEventArgs)
+    Friend Overridable Sub onCellDown(ByVal rg As wpfGraphics.GridDisplay, ByVal e As wpfGraphics.CoorClickEventArgs)
 
     End Sub
-    Friend Overridable Sub onCellEnter(ByVal rg As wpfGraphics.RectangleGrid, ByVal e As wpfGraphics.CoorClickEventArgs)
+    Friend Overridable Sub onCellEnter(ByVal rg As wpfGraphics.GridDisplay, ByVal e As wpfGraphics.CoorClickEventArgs)
 
     End Sub
 
@@ -65,7 +65,7 @@ Class TroposStartEktelesh_clickMapToRun
         MyBase.New(owner)
     End Sub
 
-    Friend Overrides Sub onCellDown(ByVal rg As wpfGraphics.RectangleGrid, ByVal e As wpfGraphics.CoorClickEventArgs)
+    Friend Overrides Sub onCellDown(ByVal rg As wpfGraphics.GridDisplay, ByVal e As wpfGraphics.CoorClickEventArgs)
         Me._owner.Run()
     End Sub
 
@@ -88,11 +88,11 @@ Class TroposStartEktelesh_hoverMapToRun
         MyBase.New(owner)
     End Sub
 
-    Friend Overrides Sub onCellDown(ByVal rg As wpfGraphics.RectangleGrid, ByVal e As wpfGraphics.CoorClickEventArgs)
+    Friend Overrides Sub onCellDown(ByVal rg As wpfGraphics.GridDisplay, ByVal e As wpfGraphics.CoorClickEventArgs)
         Me._owner.Run()
     End Sub
 
-    Friend Overrides Sub onCellEnter(ByVal rg As wpfGraphics.RectangleGrid, ByVal e As wpfGraphics.CoorClickEventArgs)
+    Friend Overrides Sub onCellEnter(ByVal rg As wpfGraphics.GridDisplay, ByVal e As wpfGraphics.CoorClickEventArgs)
         Me._owner.Run()
     End Sub
 
